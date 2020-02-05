@@ -1,0 +1,1027 @@
+!
+version 16.6
+no service pad
+service timestamps debug datetime msec localtime show-timezone year
+service timestamps log datetime msec localtime show-timezone year
+service password-encryption
+platform qfp utilization monitor load 80
+no platform punt-keepalive disable-kernel-core
+platform qos marker-statistics
+platform qos match-statistics per-filter
+platform qos match-statistics per-ace
+platform qos performance-monitor
+!
+hostname US-E-FlexSpoke
+!
+boot-start-marker
+boot-end-marker
+!
+!
+vrf definition Mgmt-intf
+ !
+ address-family ipv4
+ exit-address-family
+ !
+ address-family ipv6
+ exit-address-family
+!
+vrf definition fvrf#FlexVPN#
+ !
+ address-family ipv4
+ exit-address-family
+!
+vrf definition vrf#PUBLIC-INET#
+ !
+ address-family ipv4
+ exit-address-family
+!
+logging buffered 16384
+no logging console
+enable secret 5 ***
+!
+aaa new-model
+!
+!
+aaa group server radius MGMT-GROUP
+ server name abc-dc63
+!
+aaa authentication banner ^C
+ ********************************************************************
+ *             Please enter your username and password.             *
+ ********************************************************************
+^C
+aaa authentication fail-message ^C
+ ********************************************************************
+ *      The supplied Username and/or Password is not valid.         *
+ *  This failed login attempt has been recorded for audit purposes. *
+ *     If you are a data thief we will punch you in the crotch.     *
+ ********************************************************************
+^C
+aaa authentication login default group MGMT-GROUP local
+aaa authorization console
+aaa authorization exec default group MGMT-GROUP if-authenticated
+aaa authorization network default local
+!
+!
+!
+!
+!
+!
+aaa session-id common
+!
+!
+!
+!
+ip nbar attribute-map am_oph_legacy_guest
+ attribute encrypted encrypted-unassigned
+ attribute tunnel tunnel-unassigned
+ attribute category layer3-over-ip
+ attribute sub-category tunneling-protocols
+ attribute application-group other
+ attribute p2p-technology p2p-tech-unassigned
+ attribute traffic-class bulk-data
+ attribute business-relevance business-irrelevant
+ip nbar attribute-map pi_oph_optimise
+ attribute category business-and-productivity-tools
+ attribute sub-category enterprise-transactional-apps
+ attribute application-group other
+ attribute tunnel tunnel-unassigned
+ attribute encrypted encrypted-unassigned
+ attribute p2p-technology p2p-tech-unassigned
+ip nbar attribute-map pi_oph_telepresence
+ attribute category voice-and-video
+ attribute sub-category enterprise-realtime-apps
+ attribute application-group other
+ attribute tunnel tunnel-no
+ attribute encrypted encrypted-no
+ attribute p2p-technology p2p-tech-no
+ip nbar attribute-map pi_oph_workmate
+ attribute category business-and-productivity-tools
+ attribute sub-category enterprise-transactional-apps
+ attribute application-group other
+ attribute tunnel tunnel-unassigned
+ attribute encrypted encrypted-unassigned
+ attribute p2p-technology p2p-tech-unassigned
+ip nbar attribute-map pi_oph_exchange
+ attribute category email
+ attribute sub-category enterprise-transactional-apps
+ attribute application-group other
+ attribute tunnel tunnel-no
+ attribute encrypted encrypted-no
+ attribute p2p-technology p2p-tech-no
+ip nbar attribute-map pi_oph_it_wiki
+ attribute category business-and-productivity-tools
+ attribute sub-category enterprise-transactional-apps
+ attribute application-group other
+ attribute tunnel tunnel-unassigned
+ attribute encrypted encrypted-unassigned
+ attribute p2p-technology p2p-tech-unassigned
+ip nbar attribute-map pi_oph_pwdb
+ attribute category business-and-productivity-tools
+ attribute sub-category enterprise-transactional-apps
+ attribute application-group other
+ attribute tunnel tunnel-unassigned
+ attribute encrypted encrypted-unassigned
+ attribute p2p-technology p2p-tech-unassigned
+ip nbar attribute-map pi_oph_cpi_web
+ attribute category business-and-productivity-tools
+ attribute sub-category network-management
+ attribute application-group other
+ attribute tunnel tunnel-unassigned
+ attribute encrypted encrypted-unassigned
+ attribute p2p-technology p2p-tech-unassigned
+ip nbar attribute-map pi_oph_liveaction_g
+ attribute category net-admin
+ attribute sub-category network-management
+ attribute application-group other
+ attribute tunnel tunnel-unassigned
+ attribute encrypted encrypted-unassigned
+ attribute p2p-technology p2p-tech-unassigned
+ip nbar attribute-map pi_oph_odms_web
+ attribute category business-and-productivity-tools
+ attribute sub-category enterprise-transactional-apps
+ attribute application-group other
+ attribute tunnel tunnel-unassigned
+ attribute encrypted encrypted-unassigned
+ attribute p2p-technology p2p-tech-unassigned
+!
+ip nbar custom oph_legacy_guest transport udp
+ ip address 10.65.1.82
+ dscp 8
+ direction any
+
+
+ip nbar custom oph_optimise transport tcp id 5
+ ip address 10.65.3.138 10.65.3.139
+ port 443
+ direction any
+
+
+ip nbar custom oph_telepresence_media transport udp id 6
+ port range 17000 17999
+ dscp 34
+ direction any
+
+
+ip nbar custom oph_exchange transport tcp id 8
+ ip address 10.65.1.241 10.65.1.242 10.65.1.93 10.65.1.99 10.65.1.98 10.65.1.97
+ port 80 443
+ direction any
+
+
+
+
+
+ip nbar custom oph_it_wiki transport tcp id 7
+ ip address 10.65.1.125
+ port 443
+ direction any
+
+
+ip nbar custom oph_pwdb transport tcp id 12
+ ip address 10.65.10.190
+ port 443
+ direction any
+
+
+ip nbar custom oph_cpi_web transport tcp id 13
+ ip address 10.65.10.8
+ port 443
+ direction any
+
+
+ip nbar custom oph_liveaction_gui transport tcp id 14
+ ip address 10.65.10.5
+ port 7000
+ direction any
+
+
+ip nbar custom oph_workmate transport tcp id 4
+ ip address 10.40.1.26 10.40.1.183 10.50.1.173 10.50.1.69
+ port 80 443 2598
+ direction any
+
+
+ip nbar custom oph_odms_web transport tcp id 1
+ ip address 10.65.1.133
+ port 443
+ direction any
+
+
+!
+ip nbar attribute-set oph_legacy_guest am_oph_legacy_guest
+ip nbar attribute-set oph_optimise pi_oph_optimise
+ip nbar attribute-set oph_telepresence_media pi_oph_telepresence
+ip nbar attribute-set oph_exchange pi_oph_exchange
+ip nbar attribute-set oph_it_wiki pi_oph_it_wiki
+ip nbar attribute-set oph_pwdb pi_oph_pwdb
+ip nbar attribute-set oph_cpi_web pi_oph_cpi_web
+ip nbar attribute-set oph_liveaction_gui pi_oph_liveaction_g
+ip nbar attribute-set oph_workmate pi_oph_workmate
+ip nbar attribute-set oph_odms_web pi_oph_odms_web
+!
+no ip bootp server
+ip name-server vrf vrf#PUBLIC-INET# 208.67.222.222 208.67.220.220
+no ip domain lookup
+ip domain lookup vrf vrf#PUBLIC-INET# source-interface GigabitEthernet0/0/1
+ip domain name domain.local
+no ip dhcp use vrf connected
+ip dhcp excluded-address 10.38.23.1 10.38.23.15
+!
+ip dhcp pool ip-pool#PUBLIC-INET#
+ network 10.38.23.0 255.255.255.0
+ default-router 10.38.23.1
+ domain-name domain.public
+ dns-server 10.38.23.1
+ lease 5
+!
+!
+!
+login on-failure log
+login on-success log
+!
+!
+!
+!
+!
+!
+!
+subscriber templating
+!
+!
+!
+!
+!
+!
+!
+multilink bundle-name authenticated
+!
+flow record type performance-monitor LIVEACTION-FLOWRECORD-AVC
+ description DO NOT MODIFY. USED BY LIVEACTION.
+ match application name account-on-resolution
+ match connection client ipv4 address
+ match connection server ipv4 address
+ match connection server transport port
+ match ipv4 protocol
+ match routing vrf input
+ collect application http host
+ collect application ssl common-name
+ collect connection client counter bytes long
+ collect connection client counter bytes network long
+ collect connection client counter packets long
+ collect connection client counter packets retransmitted
+ collect connection delay application sum
+ collect connection delay network client-to-server sum
+ collect connection delay network to-client sum
+ collect connection delay network to-server sum
+ collect connection delay response client-to-server sum
+ collect connection delay response to-server histogram late
+ collect connection delay response to-server sum
+ collect connection initiator
+ collect connection new-connections
+ collect connection server counter bytes long
+ collect connection server counter bytes network long
+ collect connection server counter packets long
+ collect connection server counter responses
+ collect connection sum-duration
+ collect connection transaction counter complete
+ collect connection transaction duration max
+ collect connection transaction duration min
+ collect connection transaction duration sum
+ collect interface input
+ collect interface output
+ collect ipv4 destination address
+ collect ipv4 dscp
+ collect ipv4 source address
+ collect ipv4 ttl
+!
+!
+flow record type performance-monitor LIVEACTION-FLOWRECORD-MEDIANET
+ description DO NOT MODIFY. USED BY LIVEACTION.
+ match flow direction
+ match ipv4 destination address
+ match ipv4 protocol
+ match ipv4 source address
+ match transport destination-port
+ match transport rtp ssrc
+ match transport source-port
+ collect application media bytes counter
+ collect application media bytes rate
+ collect application media event
+ collect application media packets counter
+ collect application media packets rate
+ collect application name
+ collect counter bytes
+ collect counter bytes rate
+ collect counter packets
+ collect interface input
+ collect interface output
+ collect ipv4 dscp
+ collect ipv4 ttl
+ collect monitor event
+ collect routing forwarding-status
+ collect timestamp interval
+ collect transport event packet-loss counter
+ collect transport packets expected counter
+ collect transport packets lost counter
+ collect transport packets lost rate
+ collect transport rtp jitter maximum
+ collect transport rtp jitter mean
+ collect transport rtp jitter minimum
+!
+!
+flow record LIVEACTION-FLOWRECORD
+ description DO NOT MODIFY. USED BY LIVEACTION.
+ match flow direction
+ match interface input
+ match ipv4 destination address
+ match ipv4 protocol
+ match ipv4 source address
+ match ipv4 tos
+ match transport destination-port
+ match transport source-port
+ collect application http host
+ collect application name
+ collect application ssl common-name
+ collect counter bytes
+ collect counter packets
+ collect flow sampler
+ collect interface output
+ collect ipv4 destination mask
+ collect ipv4 dscp
+ collect ipv4 id
+ collect ipv4 source mask
+ collect ipv4 source prefix
+ collect routing destination as
+ collect routing next-hop address ipv4
+ collect routing source as
+ collect timestamp sys-uptime first
+ collect timestamp sys-uptime last
+ collect transport tcp flags
+!
+!
+flow exporter LIVEACTION-FLOWEXPORTER-IPFIX
+ description DO NOT MODIFY. USED BY LIVEACTION.
+ destination 10.65.10.5
+ source Loopback0
+ transport udp 2055
+ export-protocol ipfix
+ option interface-table
+ option vrf-table
+ option sampler-table
+ option application-table
+ option application-attributes
+ option c3pl-class-table
+ option c3pl-policy-table
+!
+!
+flow monitor type performance-monitor LIVEACTION-FLOWMONITOR-AVC
+ description DO NOT MODIFY. USED BY LIVEACTION.
+ record LIVEACTION-FLOWRECORD-AVC
+ exporter LIVEACTION-FLOWEXPORTER-IPFIX
+ cache entries 6500
+!
+!
+flow monitor type performance-monitor LIVEACTION-FLOWMONITOR-MEDIANET
+ description DO NOT MODIFY. USED BY LIVEACTION.
+ record LIVEACTION-FLOWRECORD-MEDIANET
+ exporter LIVEACTION-FLOWEXPORTER-IPFIX
+!
+!
+flow monitor LIVEACTION-FLOWMONITOR
+ description DO NOT MODIFY. USED BY LIVEACTION.
+ exporter LIVEACTION-FLOWEXPORTER-IPFIX
+ cache timeout inactive 10
+ cache timeout active 60
+ record LIVEACTION-FLOWRECORD
+!
+!
+!
+!
+!
+!
+!
+!
+crypto pki trustpoint RootCA
+ enrollment terminal
+ revocation-check none
+ rsakeypair PKI
+!
+crypto pki trustpoint IntermediateCA
+ enrollment terminal
+ serial-number
+ ip-address none
+ subject-name CN=US-E-FlexSpoke.domain.local,OU=flex-ap#FlexSpoke#10m#,O=NEMA,L=FlexSpoke,C=US
+ chain-validation continue RootCA
+ revocation-check none
+ rsakeypair PKI
+!
+!
+!
+crypto pki certificate map pki-cm#FlexHub#NEMA# 10
+ subject-name co apac
+ subject-name co flexhub
+!
+crypto pki certificate chain RootCA
+ certificate ca <omitted>
+        quit
+crypto pki certificate chain IntermediateCA
+ certificate <omitted>
+        quit
+ certificate ca <omitted>
+        quit
+!
+!
+!
+!
+
+diagnostic bootup level minimal
+spanning-tree extend system-id
+!
+!
+!
+!
+!
+object-group network net-og#FlexHub#
+ host X.X.X.X
+ host X.X.X.X
+!
+object-group network net-og#UMBRELLA#
+ host 208.67.222.222
+ host 208.67.220.220
+!
+!
+!
+username admin privilege 15 secret 5 ***
+!
+redundancy
+ mode none
+!
+crypto ikev2 proposal default
+ encryption aes-cbc-256 aes-cbc-192 aes-cbc-128
+ integrity sha512 sha384 sha256 sha1 md5
+ group 19
+!
+!
+!
+crypto ikev2 profile default
+ match fvrf fvrf#FlexVPN#
+ match certificate pki-cm#FlexHub#NEMA#
+ identity local dn
+ authentication remote rsa-sig
+ authentication local rsa-sig
+ pki trustpoint IntermediateCA
+ dpd 10 2 on-demand
+ nat keepalive 300
+ aaa authorization group cert list default default
+!
+crypto ikev2 fragmentation
+!
+!
+!
+!
+!
+class-map match-any LIVEACTION-CLASS-AVC
+ match access-group name LIVEACTION-ACL-AVC
+class-map match-any qos-cm#TRANSACTIONAL#DSCP#
+ match dscp af21
+class-map match-any qos-cm#VOICE#NBAR#
+ match protocol rtcp
+class-map match-any qos-cm#CRITICAL_DATA#DSCP#
+ match dscp af41
+ match dscp af42
+ match dscp cs3
+ match dscp af21
+ match dscp cs2
+class-map match-any qos-cm#SCAVENGER#NBAR#
+ match protocol attribute business-relevance business-irrelevant
+class-map match-any qos-cm#NETWORK_CONTROL#DSCP#
+ match dscp cs6
+class-map match-any qos-cm#NETWORK_CONTROL#NBAR#
+ match protocol attribute sub-category routing-protocol
+ match protocol attribute sub-category naming-services
+class-map match-any qos-cm#SCAVENGER#DSCP#
+ match dscp cs1
+class-map match-any qos-cm#SIGNALING#DSCP#
+ match dscp cs3
+class-map match-any qos-cm#VIDEO#DSCP#
+ match dscp af42
+ match dscp af41
+class-map match-any qos-cm#TRANSACTIONAL#NBAR#
+ match protocol citrix
+ match protocol outlook-web-service
+ match protocol exchange
+ match protocol ms-rpc
+ match protocol smtp
+ match protocol oph_workmate
+ match protocol oph_odms_web
+ match protocol oph_it_wiki
+ match protocol oph_optimise
+ match protocol oph_exchange
+class-map match-any qos-cm#OPPORTUNISTIC_VIDEO#DSCP#
+ match dscp af42
+class-map match-any qos-cm#PRIORITIZED_VIDEO#DSCP#
+ match dscp af41
+class-map match-any qos-cm#VOICE#DSCP#
+ match dscp ef
+class-map match-any LIVEACTION-CLASS-MEDIANET
+ match protocol telepresence-media
+ match protocol rtp
+class-map match-any qos-cm#NETWORK_MANAGEMENT#NBAR#
+ match protocol ms-wbt
+ match protocol vmware-vsphere
+ match protocol active-directory
+ match protocol kerberos
+ match protocol ms-netlogon
+ match protocol radius
+ match protocol tacacs
+ match protocol dhcp
+ match protocol echo
+ match protocol ntp
+ match protocol ping
+ match protocol snmp
+ match protocol ssh
+ match protocol telnet
+ match protocol oph_liveaction_gui
+ match protocol oph_pwdb
+ match protocol oph_cpi_web
+class-map match-any qos-cm#PRIORITIZED_VIDEO#ACL#
+ match access-group name qos-acl#TELEPRESENCE_VIDEO#
+class-map match-any qos-cm#OPPORTUNISTIC_VIDEO#ACL#
+ match access-group name qos-acl#JABBER_VIDEO#
+class-map match-any qos-cm#VOICE#ACL#
+ match access-group name qos-acl#VOICE#
+class-map match-any qos-cm#NETWORK_MANAGEMENT#DSCP#
+ match dscp cs2
+class-map match-any qos-cm#SIGNALING#ACL#
+ match access-group name qos-acl#SIGNALING#
+!
+policy-map qos-pm#QUEUE#WAN#OUT#8c#
+ class qos-cm#VIDEO#DSCP#
+  bandwidth remaining percent 39
+  random-detect dscp-based
+  random-detect exponential-weighting-constant 9
+ class qos-cm#SIGNALING#DSCP#
+  bandwidth remaining percent 3
+ class qos-cm#NETWORK_CONTROL#DSCP#
+  bandwidth remaining percent 3
+ class qos-cm#TRANSACTIONAL#DSCP#
+  bandwidth remaining percent 21
+ class qos-cm#NETWORK_MANAGEMENT#DSCP#
+  bandwidth remaining percent 3
+ class qos-cm#SCAVENGER#DSCP#
+  bandwidth remaining percent 1
+ class qos-cm#VOICE#DSCP#
+  priority level 1
+  police cir percent 7
+ class class-default
+  bandwidth remaining percent 30
+policy-map qos-pm#MARK#LAN#IN#
+ class qos-cm#VOICE#ACL#
+  set dscp ef
+ class qos-cm#VOICE#NBAR#
+  set dscp ef
+ class qos-cm#PRIORITIZED_VIDEO#ACL#
+  set dscp af41
+ class qos-cm#OPPORTUNISTIC_VIDEO#ACL#
+  set dscp af42
+ class qos-cm#NETWORK_CONTROL#NBAR#
+  set dscp cs6
+ class qos-cm#SIGNALING#ACL#
+  set dscp cs3
+ class qos-cm#NETWORK_MANAGEMENT#NBAR#
+  set dscp cs2
+ class qos-cm#TRANSACTIONAL#NBAR#
+  set dscp af21
+ class qos-cm#SCAVENGER#NBAR#
+  set dscp cs1
+ class class-default
+  set dscp default
+policy-map type performance-monitor LIVEACTION-POLICY-UNIFIED
+ class LIVEACTION-CLASS-MEDIANET
+  flow monitor LIVEACTION-FLOWMONITOR-MEDIANET
+ class LIVEACTION-CLASS-AVC
+  flow monitor LIVEACTION-FLOWMONITOR-AVC
+policy-map qos-pm#CLASSIFY#
+ class qos-cm#VOICE#DSCP#
+ class qos-cm#PRIORITIZED_VIDEO#DSCP#
+ class qos-cm#OPPORTUNISTIC_VIDEO#DSCP#
+ class qos-cm#NETWORK_CONTROL#DSCP#
+ class qos-cm#SIGNALING#DSCP#
+ class qos-cm#NETWORK_MANAGEMENT#DSCP#
+ class qos-cm#TRANSACTIONAL#DSCP#
+ class qos-cm#SCAVENGER#DSCP#
+policy-map qos-pm#MARK#PUBLIC-INET#IN#
+ class class-default
+  set dscp cs1
+policy-map qos-pm#SHAPE#WAN#OUT#10m#TUN#SPOKE#
+ class class-default
+  shape average 10000000
+   service-policy qos-pm#QUEUE#WAN#OUT#8c#
+!
+!
+crypto logging ikev2
+!
+!
+!
+!
+!
+crypto isakmp invalid-spi-recovery
+!
+crypto ipsec security-association replay window-size 1024
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+interface Loopback0
+ ip address 10.38.255.1 255.255.255.255
+ no ip redirects
+!
+interface Tunnel25323
+ description US-E-FlexHub.domain.local:Tunnel25323
+ bandwidth 10000
+ vrf forwarding vrf#PUBLIC-INET#
+ ip flow monitor LIVEACTION-FLOWMONITOR input
+ ip flow monitor LIVEACTION-FLOWMONITOR output
+ ip address 10.253.23.180 255.255.255.0
+ no ip redirects
+ no ip proxy-arp
+ ip mtu 1376
+ ip nbar protocol-discovery
+ ip nhrp network-id 23
+ ip nhrp nhs dynamic nbma 10.254.253.23 multicast
+ ip tcp adjust-mss 1336
+ load-interval 30
+ cdp enable
+ tunnel source Loopback0
+ tunnel destination 10.254.253.23
+ tunnel path-mtu-discovery
+!
+interface Tunnel84180
+ description US-W-FlexHub.domain.local:Tunnel84180
+ bandwidth 10000
+ ip flow monitor LIVEACTION-FLOWMONITOR input
+ ip flow monitor LIVEACTION-FLOWMONITOR output
+ ip address 10.2.38.2 255.255.255.252
+ no ip redirects
+ no ip proxy-arp
+ ip mtu 1400
+ ip nbar protocol-discovery
+ ip nhrp network-id 1
+ ip nhrp redirect
+ ip tcp adjust-mss 1360
+ load-interval 30
+ cdp enable
+ tunnel source GigabitEthernet0/0/1
+ tunnel destination X.X.X.X
+ tunnel path-mtu-discovery
+ tunnel vrf fvrf#FlexVPN#
+ tunnel protection ipsec profile default
+ service-policy input qos-pm#CLASSIFY#
+ service-policy output qos-pm#SHAPE#WAN#OUT#10m#TUN#SPOKE#
+!
+interface Tunnel86180
+ description US-E-FlexHub.domain.local:Tunnel86180
+ bandwidth 10000
+ ip flow monitor LIVEACTION-FLOWMONITOR input
+ ip flow monitor LIVEACTION-FLOWMONITOR output
+ ip address 10.34.38.2 255.255.255.252
+ no ip redirects
+ no ip proxy-arp
+ ip mtu 1400
+ ip nbar protocol-discovery
+ ip nhrp network-id 1
+ ip nhrp redirect
+ ip tcp adjust-mss 1360
+ load-interval 30
+ cdp enable
+ tunnel source GigabitEthernet0/0/1
+ tunnel destination X.X.X.X
+ tunnel path-mtu-discovery
+ tunnel vrf fvrf#FlexVPN#
+ tunnel protection ipsec profile default
+ service-policy input qos-pm#CLASSIFY#
+ service-policy output qos-pm#SHAPE#WAN#OUT#10m#TUN#SPOKE#
+!
+interface GigabitEthernet0/0/0
+ description Trunk to Site Switch
+ no ip address
+ load-interval 30
+ negotiation auto
+!
+interface GigabitEthernet0/0/0.123
+ description Public Internet Network Gateway
+ encapsulation dot1Q 123
+ vrf forwarding vrf#PUBLIC-INET#
+ ip address 10.38.23.1 255.255.255.0
+ no ip redirects
+ ip nbar protocol-discovery
+ ip access-group int-acl#PUBLIC#IN# in
+ no cdp enable
+ service-policy input qos-pm#MARK#PUBLIC-INET#IN#
+ service-policy output qos-pm#CLASSIFY#
+!
+interface GigabitEthernet0/0/0.161
+ description Corp Network Gateway
+ encapsulation dot1Q 161
+ ip address 10.38.51.14 255.255.255.248
+ no ip redirects
+ no ip proxy-arp
+ ip nbar protocol-discovery
+ service-policy input qos-pm#MARK#LAN#IN#
+ service-policy output qos-pm#CLASSIFY#
+!
+!
+interface GigabitEthernet0/0/1
+ description ISP
+ bandwidth 10000
+ vrf forwarding fvrf#FlexVPN#
+ ip flow monitor LIVEACTION-FLOWMONITOR input
+ ip flow monitor LIVEACTION-FLOWMONITOR output
+ ip address X.X.X.X 255.255.255.248
+ no ip redirects
+ no ip proxy-arp
+ ip nbar protocol-discovery
+ ip access-group int-acl#FlexSpoke#INET#IN# in
+ load-interval 30
+ negotiation auto
+ no cdp enable
+ service-policy input qos-pm#CLASSIFY#
+ service-policy output qos-pm#CLASSIFY#
+!
+interface Service-Engine0/4/0
+!
+interface GigabitEthernet0
+ vrf forwarding Mgmt-intf
+ no ip address
+ shutdown
+ negotiation auto
+!
+!
+router eigrp PUBLIC-INET
+ !
+ address-family ipv4 unicast vrf vrf#PUBLIC-INET# autonomous-system 23
+  !
+  topology base
+   distribute-list prefix eigrp-pl#PUBLIC-INET# out
+  exit-af-topology
+  network 10.38.23.0 0.0.0.255
+  network 10.253.23.0 0.0.0.255
+ exit-address-family
+!
+router bgp 65056
+ bgp router-id 10.38.255.1
+ bgp log-neighbor-changes
+ bgp graceful-restart
+ timers bgp 15 30
+ neighbor 10.2.38.1 remote-as 65056
+ neighbor 10.2.38.1 description US-W-FlexHub
+ neighbor 10.34.38.1 remote-as 65056
+ neighbor 10.34.38.1 description US-E-FlexHub
+ !
+ address-family ipv4
+  network 10.38.0.0 mask 255.255.0.0
+  network 10.38.255.1 mask 255.255.255.255
+  neighbor 10.2.38.1 activate
+  neighbor 10.2.38.1 next-hop-self all
+  neighbor 10.2.38.1 soft-reconfiguration inbound
+  neighbor 10.2.38.1 route-map bgp-rm#FlexHub#SECONDARY#IN# in
+  neighbor 10.2.38.1 route-map bgp-rm#FlexHub#SECONDARY#OUT# out
+  neighbor 10.34.38.1 activate
+  neighbor 10.34.38.1 next-hop-self all
+  neighbor 10.34.38.1 soft-reconfiguration inbound
+  neighbor 10.34.38.1 route-map bgp-rm#FlexHub#PRIMARY#IN# in
+  neighbor 10.34.38.1 route-map bgp-rm#FlexHub#PRIMARY#OUT# out
+ exit-address-family
+!
+ip local policy route-map qos-rm#MARK#ROUTER_TRAFFIC#
+ip forward-protocol nd
+ip tcp path-mtu-discovery
+ip ftp source-interface Loopback0
+ip ftp username cisco
+ip ftp password 7 03075218050027585E
+no ip http server
+no ip http secure-server
+ip tftp source-interface Loopback0
+ip dns server
+ip route 10.38.0.0 255.255.0.0 10.38.51.9
+ip route vrf fvrf#FlexVPN# 0.0.0.0 0.0.0.0 X.X.X.X
+ip route vrf vrf#PUBLIC-INET# 0.0.0.0 0.0.0.0 10.253.23.1
+!
+ip ssh version 2
+ip scp server enable
+!
+!
+ip prefix-list bgp-pl#LOCAL_NET# seq 1 permit 10.38.255.1/32
+ip prefix-list bgp-pl#LOCAL_NET# seq 10 permit 10.38.0.0/16
+!
+ip prefix-list eigrp-pl#PUBLIC-INET# seq 10 permit 10.38.23.0/24
+!
+ip access-list standard ALLOWED-SNMP-POLLERS
+ permit 10.65.10.10
+ permit 10.65.10.9
+ permit 10.65.10.8
+ permit 10.65.10.7
+ permit 10.65.10.5
+!
+ip access-list extended LIVEACTION-ACL-AVC
+ permit tcp any any
+ip access-list extended int-acl#FlexSpoke#INET#IN#
+ permit udp object-group net-og#FlexHub# any eq non500-isakmp
+ permit udp object-group net-og#FlexHub# any eq isakmp
+ permit esp object-group net-og#FlexHub# any
+ permit tcp object-group net-og#FlexHub# any eq 22
+ permit icmp object-group net-og#FlexHub# any echo
+ permit icmp any any echo-reply
+ permit icmp any any ttl-exceeded
+ permit icmp any any port-unreachable
+ permit udp object-group net-og#UMBRELLA# eq domain any
+ permit udp any any gt 1023 ttl eq 1
+ deny   ip any any
+ip access-list extended int-acl#FlexSpoke#INET#IN#LOG#
+ permit udp object-group net-og#FlexHub# any eq non500-isakmp
+ permit udp object-group net-og#FlexHub# any eq isakmp
+ permit esp object-group net-og#FlexHub# any
+ permit tcp object-group net-og#FlexHub# any eq 22
+ permit icmp object-group net-og#FlexHub# any echo
+ permit icmp any any echo-reply
+ permit icmp any any ttl-exceeded
+ permit icmp any any port-unreachable
+ permit udp object-group net-og#UMBRELLA# eq domain any
+ permit udp any any gt 1023 ttl eq 1
+ deny   udp any gt 0 any gt 0 log
+ deny   tcp any gt 0 any gt 0 log
+ deny   ip any any
+ip access-list extended int-acl#PUBLIC#IN#
+ permit udp host 0.0.0.0 eq bootpc host 255.255.255.255 eq bootps
+ permit udp 10.0.23.0 0.255.0.255 eq bootpc host 255.255.255.255 eq bootps
+ permit udp 10.0.23.0 0.255.0.255 eq bootpc 10.0.23.1 0.255.0.0 eq bootps
+ permit udp 10.0.23.0 0.255.0.255 10.0.23.1 0.255.0.0 eq domain
+ deny   udp any gt 0 10.0.0.0 0.255.255.255 gt 0
+ deny   tcp any gt 0 10.0.0.0 0.255.255.255 gt 0
+ permit ip 10.0.23.0 0.255.0.255 any
+ip access-list extended qos-acl#JABBER_VIDEO#
+ permit udp 10.0.11.0 0.255.0.255 range 5000 5999 any
+ permit udp 10.0.21.0 0.255.0.255 range 5000 5999 any
+ permit udp 10.0.81.0 0.255.0.255 range 5000 5999 any
+ permit udp 10.0.31.130 0.255.0.0 range 36000 59999 10.0.11.0 0.255.0.255 dscp af41
+ permit udp 10.0.31.130 0.255.0.0 range 36000 59999 10.0.21.0 0.255.0.255 dscp af41
+ permit udp 10.0.31.130 0.255.0.0 range 36000 59999 10.0.81.0 0.255.0.255 dscp af41
+ip access-list extended qos-acl#ROUTER_MANAGEMENT#
+ permit tcp 10.0.255.0 0.255.0.255 eq 22 any
+ permit udp 10.0.255.0 0.255.0.255 host 10.65.10.8
+ permit udp 10.0.255.0 0.255.0.255 host 10.65.10.5
+ permit udp 10.0.255.0 0.255.0.255 eq snmp any
+ip access-list extended qos-acl#ROUTER_TRAFFIC#
+ permit tcp 10.0.255.0 0.255.0.255 eq 22 any
+ permit udp 10.0.255.0 0.255.0.255 host 10.65.10.5 eq 2055
+ permit udp 10.0.255.0 0.255.0.255 eq snmp any
+ip access-list extended qos-acl#SIGNALING#
+ permit tcp 10.0.11.0 0.255.0.255 any range 5060 5061
+ permit tcp 10.0.21.0 0.255.0.255 any range 5060 5061
+ permit tcp 10.0.41.0 0.255.0.255 any dscp cs3
+ permit tcp 10.0.41.0 0.255.0.255 any eq 2000
+ permit tcp 10.0.42.0 0.255.0.255 any dscp cs3
+ permit tcp 10.0.42.0 0.255.0.255 any range 5060 5061
+ permit tcp 10.0.81.0 0.255.0.255 any range 5060 5061
+ permit tcp 10.0.31.0 0.255.0.255 eq 2000 any
+ permit tcp 10.0.31.0 0.255.0.255 range 5060 5061 any
+ permit udp 10.0.31.0 0.255.0.255 range 5060 5061 any
+ permit tcp 10.0.31.0 0.255.0.255 any range 5060 5061
+ permit udp 10.0.31.0 0.255.0.255 any range 5060 5061
+ permit tcp 10.0.51.0 0.255.0.255 range 5060 5061 any
+ permit udp 10.0.51.0 0.255.0.255 range 5060 5061 any
+ permit tcp 10.0.51.0 0.255.0.255 any range 5060 5061
+ permit udp 10.0.51.0 0.255.0.255 any range 5060 5061
+ permit tcp 10.0.31.0 0.255.0.255 eq 5066 10.0.31.130 0.255.0.0
+ permit tcp 10.0.31.0 0.255.0.255 10.0.31.130 0.255.0.0 range 5060 5061
+ permit tcp 10.0.31.130 0.255.0.0 range 25000 29999 any dscp cs3
+ip access-list extended qos-acl#TELEPRESENCE_VIDEO#
+ permit udp 10.0.42.0 0.255.0.255 range 17000 17999 any dscp af41
+ permit udp 10.0.31.130 0.255.0.0 range 36000 59999 10.0.42.0 0.255.0.255 dscp af41
+ip access-list extended qos-acl#VOICE#
+ permit udp 10.0.11.0 0.255.0.255 range 3000 3999 any
+ permit udp 10.0.21.0 0.255.0.255 range 3000 3999 any
+ permit udp 10.0.41.0 0.255.0.255 any dscp ef
+ permit udp 10.0.42.0 0.255.0.255 range 17000 17999 any dscp ef
+ permit udp 10.0.81.0 0.255.0.255 range 3000 3999 any
+ permit udp 10.0.31.130 0.255.0.0 range 36000 59999 any dscp ef
+ permit udp 10.0.31.14 0.255.0.0 any dscp ef
+ permit udp 10.0.31.15 0.255.0.0 any dscp ef
+ permit udp 10.0.51.14 0.255.0.0 any dscp ef
+logging trap notifications
+logging source-interface Loopback0
+logging host 10.65.10.8
+!
+!
+route-map bgp-rm#FlexHub#PRIMARY#OUT# permit 10
+ match ip address prefix-list bgp-pl#LOCAL_NET#
+ set local-preference 300
+!
+route-map bgp-rm#FlexHub#SECONDARY#OUT# permit 10
+ match ip address prefix-list bgp-pl#LOCAL_NET#
+ set local-preference 200
+!
+route-map bgp-rm#FlexHub#PRIMARY#IN# permit 10
+ set local-preference 300
+!
+route-map qos-rm#MARK#ROUTER_TRAFFIC# permit 10
+ match ip address qos-acl#ROUTER_TRAFFIC# qos-acl#ROUTER_MANAGEMENT#
+ set ip precedence immediate
+!
+route-map bgp-rm#FlexHub#SECONDARY#IN# permit 10
+ set local-preference 200
+!
+snmp-server group V3Group v3 priv access ALLOWED-SNMP-POLLERS
+snmp-server trap-source Loopback0
+snmp-server source-interface informs Loopback0
+snmp-server contact administrator@domain.com
+snmp-server enable traps snmp authentication linkdown linkup coldstart warmstart
+snmp-server enable traps config
+snmp ifmib ifindex persist
+!
+!
+radius-server dead-criteria time 20 tries 3
+radius-server timeout 10
+radius-server deadtime 2
+!
+radius server abc-dc63
+ address ipv4 10.38.1.40 auth-port 1812 acct-port 1813
+ key 7 ***
+!
+control-plane host
+!
+!
+control-plane
+!
+!
+banner exec ^C
+********************************************************************
+* You are now logged into: $(hostname)                                 *
+* All activity is being logged for review by System Administrators *
+********************************************************************
+^C
+banner login ^C
+ ********************************************************************
+ * [WARNING]                                                        *
+ *                                                                  *
+ * This system belongs to a private organisation. If you are not    *
+ * authorised to access this system, exit immediately.              *
+ * Unauthorised access to this system is forbidden by company       *
+ * policies, national, and international laws.                      *
+ * Unauthorised users are subject to criminal and civil penalties   *
+ * as well as company initiated disciplinary proceedings.           *
+ * By entry into this system you acknowledge that you are           *
+ * authorised access and the level of privilege you subsequently    *
+ * execute on this system. You further acknowledge that by entry    *
+ * into this system you expect no privacy from monitoring.          *
+ *                                                                  *
+ *        ALL ACCESS TO THIS SYSTEM IS MONITORED AND LOGGED         *
+ *                                                                  *
+ ********************************************************************
+^C
+!
+line con 0
+ exec-timeout 15 0
+ logging synchronous
+ transport input none
+ stopbits 1
+line aux 0
+ exec-timeout 0 1
+ no exec
+ transport output none
+ stopbits 1
+line vty 0 4
+ exec-timeout 15 0
+ logging synchronous
+ transport input ssh
+line vty 5 15
+ exec-timeout 15 0
+ logging synchronous
+ transport input ssh
+!
+ntp server 10.38.255.101
+wsma agent exec
+!
+wsma agent config
+!
+wsma agent filesys
+!
+wsma agent notify
+!
+event manager applet UPDATE-INT-DESC
+ event neighbor-discovery interface regexp Tunnel.* cdp add
+ action 1.1 cli command "enable"
+ action 1.2 cli command "config t"
+ action 1.3 cli command "interface $_nd_local_intf_name"
+ action 1.4 cli command "description $_nd_cdp_entry_name:$_nd_port_id"
+ action 2.1 syslog priority alerts msg "$_nd_local_intf_name description updated"
+!
+end
